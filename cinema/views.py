@@ -127,17 +127,12 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         return MovieSessionSerializer
 
 
-class TicketViewSet(viewsets.ModelViewSet):
-    queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
-
-
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderListSerializer
 
     def perform_create(self, serializer):
-        return serializer.save(self.request.user)
+        return serializer.save(user=self.request.user)
 
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user)

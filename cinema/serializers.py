@@ -154,6 +154,29 @@ class OrderSerializer(serializers.ModelSerializer):
 
             return order
 
+    def validate(self, attrs):
+        tickets_data = attrs.get("tickets", [])
+        movie_session = None
+
+        for ticket_data in tickets_data:
+            if movie_session is None:
+                movie_session = ticket_data["movie_session"]
+
+            if ticket_data["movie_session"] != movie_session:
+                raise serializers.ValidationError(
+                    "All tickets must be for the same movie session."
+                )
+
+            if Ticket.objects.filter(
+                movie_session=ticket_data["movie_session"],
+                row=ticket_data["row"],
+                seat=ticket_data["seat"],
+            ).exists():
+                raise serializers.ValidationError(
+                    f"Seat {ticket_data['seat']} in row "
+                    f"{ticket_data['row']} is already booked."
+                )
+
 
 class OrderListSerializer(OrderSerializer):
     tickets = TicketListSerializer(many=True, read_only=True)
