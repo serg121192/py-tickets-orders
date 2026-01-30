@@ -70,10 +70,12 @@ class MovieViewSet(viewsets.ModelViewSet):
         if title_string:
             queryset = queryset.filter(title__contains=title_string)
 
+        queryset = queryset.distinct()
+
         if self.action in ["list", "retrieve"]:
             return queryset.prefetch_related("actors", "genres")
 
-        return queryset.distinct()
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -130,16 +132,9 @@ class TicketViewSet(viewsets.ModelViewSet):
     serializer_class = TicketSerializer
 
 
-class OrderListViewSet(PageNumberPagination):
-    page_size = 5
-    page_size_query_params = "page_size"
-    max_page_size = 100
-
-
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderListSerializer
-    pagination_class = OrderListViewSet
 
     def perform_create(self, serializer):
         return serializer.save(self.request.user)
